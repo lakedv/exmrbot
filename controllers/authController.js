@@ -10,3 +10,7 @@ exports.login = (req, res) => {
     }
     return res.status(401).json({message: 'Credenciales invalidas'})
 }
+
+exports.profile = (req, res) => {
+    res.json({message: `Bienvenido ${req.user.user}`, user: req.user})
+}
