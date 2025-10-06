@@ -37,8 +37,8 @@ Antes de ejecutar el proyecto, asegúrate de tener instalado:
 3. Crear un archivo `.env` con las siguientes variables:
 
    ```env
-  JWT_SECRET=<YOUR_SECRET>
-  OPENWEATHER_API_KEY=<YOUR_API_KEY>
+   JWT_SECRET=<YOUR_SECRET>
+   OPENWEATHER_API_KEY=<YOUR_API_KEY>
    ```
 
 4. Iniciar el servidor:
