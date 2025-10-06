@@ -34,13 +34,11 @@ Antes de ejecutar el proyecto, asegúrate de tener instalado:
    npm install
    ```
 
-3. Crear un archivo `.env` o configurar un archivo `config/config.js` con las siguientes variables:
+3. Crear un archivo `.env` con las siguientes variables:
 
-   ```javascript
-   module.exports = {
-     jwtSecret: 'clave_secreta',
-     openWeatherKey: 'tu_api_key_aqui'
-   };
+   ```env
+  JWT_SECRET=<YOUR_SECRET>
+  OPENWEATHER_API_KEY=<YOUR_API_KEY>
    ```
 
 4. Iniciar el servidor:
