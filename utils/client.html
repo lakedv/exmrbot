@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Examen Rocketbot - API + JWT Auth</title>
+    <style>
+        body { font-family: Arial; margin: 2rem; }
+        input, button { margin: 0.5rem 0; padding: 0.4rem;}
+        pre {background: #f2f2f2; padding: 1rem; border-radius: 5px;}
+    </style>
+</head>
+
+<body>
+    <h1>Examen Rocketbot - JWT+API Clima</h1>
+
+    <section>
+        <h3>Login</h3>
+        <input id="user" placeholder="Usuario" />
+        <input id="password" type="password" placeholder="Contraseña"/>
+        <button onclick="login()">Conectar</button>
+    </section>
+
+    <section>
+        <h3>Consultar Clima</h3>
+        <input id="city" placeholder="Ciudad"/>
+        <button onclick="getWeather()">Consultar</button>
+    </section>
+
+    <h3>Detalle:</h3>
+    <pre id="output"></pre>
+
+    <script>
+        const API_URL = "http://localhost:3000";
+        let token = localStorage.getItem('token');
+
+        async function login() {
+            const username = document.getElementById('user').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (!username || !password) {
+                show("Debe ingresar usuario y contraseña.");
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/auth/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    token = data.token;
+                    localStorage.setItem("token", token);
+                    show("Login exitoso, token guardado.");
+                } else {
+                    show(`Error: ${data.message || "No autorizado."}`);
+                }
+
+            } catch (err) {
+                show(`Error de conexión con el servidor: ${err.message}`);
+            }
+        }
+
+        async function getWeather() {
+            const city = document.getElementById('city').value.trim();
+            if (!token) {
+                show("Debe iniciar sesión primero.");
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/weather/${city}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    if (res.status === 401) {
+                        show("Token inválido o expirado. Inicie sesión nuevamente.");
+                        localStorage.removeItem("token");
+                    } else if (res.status === 404) {
+                        show(`No se encontró información para "${city}".`);
+                    } else {
+                        show(`Error al obtener el clima: ${errData.message || res.statusText}`);
+                    }
+                    return;
+                }
+                const data = await res.json();
+                show(formatWeather(data));
+
+            } catch (err) {
+                show(`Error de conexión: ${err.message}`);
+            }
+        }
+
+        function formatWeather(data) {
+            return `
+                Ciudad: ${data.name || "Desconocida"}
+                Temperatura: ${data.main?.temp ?? "?"} °C
+                Sensación térmica: ${data.main?.feels_like ?? "?"} °C
+                Humedad: ${data.main?.humidity ?? "?"}%
+                Clima: ${data.weather?.[0]?.description ?? "No disponible"}
+            `.trim();
+        }
+
+        function show(msg) {
+            document.getElementById('output').textContent = msg;
+        }
+    </script>
+</body>
+</html>
