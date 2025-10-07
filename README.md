@@ -96,7 +96,7 @@ Devuelve un mensaje confirmando que la API está operativa.
 **Ejemplo de respuesta (200):**
 ```json
 {
-  "message": "APIWeather+JWT is running correctly."
+  "message": "APIWeather+JWT is OK."
 }
 ```
 
@@ -260,7 +260,7 @@ Todas las rutas que consumen datos externos están protegidas con este middlewar
 
 ## Uso desde Client.html
 
-El archivo `public/client.html` ofrece una interfaz web simple para interactuar con la API:
+El archivo `utils/client.html` ofrece una interfaz web simple para interactuar con la API:
 
 1. **Login:**  
    Ingresar usuario y contraseña (`admin` / `secret`) y presionar “Conectar”.  
