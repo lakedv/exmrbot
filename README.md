@@ -5,7 +5,7 @@
 **APIWeather+JWT** es una aplicación desarrollada en **Node.js** y **Express** que implementa autenticación mediante **JSON Web Tokens (JWT)** y consumo de una **API externa de clima (OpenWeather API)**.  
 El sistema permite a los usuarios autenticarse, obtener un token JWT válido por una hora y utilizarlo para acceder a rutas protegidas que consultan información meteorológica de diferentes ciudades.
 
-Este proyecto cumple con los requisitos técnicos de autenticación, protección de rutas, integración con un servicio externo y manejo adecuado de errores.
+Además, la API incluye un endpoint `/health` para verificar su estado y estadísticas básicas del servidor.
 
 ---
 
@@ -37,6 +37,7 @@ Antes de ejecutar el proyecto, asegúrate de tener instalado:
 3. Crear un archivo `.env` con las siguientes variables:
 
    ```env
+   PORT=3000
    JWT_SECRET=<YOUR_SECRET>
    OPENWEATHER_API_KEY=<YOUR_API_KEY>
    ```
@@ -70,11 +71,12 @@ APIWeather+JWT/
 │   ├── authRoutes.js
 │   └── weatherRoutes.js
 │
+├── utils/
+│   └── users.js
+│   └── client.html
+│
 ├── config/
 │   └── config.js
-│
-├── public/
-│   └── client.html
 │
 ├── app.js
 ├── package.json
@@ -85,18 +87,52 @@ APIWeather+JWT/
 
 ## Endpoints Disponibles
 
-### 1. **POST /auth/login**
+### 1. **GET /**
+
+**Descripción:**  
+Endpoint raíz de verificación.  
+Devuelve un mensaje confirmando que la API está operativa.
+
+**Ejemplo de respuesta (200):**
+```json
+{
+  "message": "APIWeather+JWT is running correctly."
+}
+```
+
+---
+
+### 2. **GET /health**
+
+**Descripción:**  
+Devuelve estadísticas básicas del servidor (uptime, memoria utilizada y puerto activo).
+
+**Ejemplo de respuesta (200):**
+```json
+{
+  "status": "OK",
+  "uptime": "123.45s",
+  "memoryUsage": "32.5 MB",
+  "port": 3000
+}
+```
+
+---
+
+### 3. **POST /auth/login**
 
 **Descripción:**  
 Autentica al usuario y devuelve un JWT válido por 1 hora.
 
-**Credenciales válidas:**
+**Credenciales válidas (por defecto):**
 ```json
 {
   "username": "admin",
   "password": "secret"
 }
 ```
+
+> Las contraseñas se almacenan de forma segura utilizando **bcrypt** para hashing y comparación segura.
 
 **Respuesta exitosa (200):**
 ```json
@@ -106,17 +142,38 @@ Autentica al usuario y devuelve un JWT válido por 1 hora.
 ```
 
 **Errores posibles:**
+- 400 - Usuario o contraseña no proporcionados
 - 401 - Credenciales inválidas
 - 500 - Error interno del servidor
 
 ---
 
-### 2. **GET /weather/:city**
+### 4. **GET /auth/profile**
+
+**Descripción:**  
+Devuelve la información del usuario autenticado, validando el JWT recibido.
+
+**Headers requeridos:**
+```
+Authorization: Bearer <token>
+```
+
+**Ejemplo de respuesta:**
+```json
+{
+  "username": "admin",
+  "role": "user"
+}
+```
+
+---
+
+### 5. **GET /weather/:city**
 
 **Descripción:**  
 Obtiene los datos del clima actual de una ciudad, consultando la API pública de **OpenWeather**.
 
-**Requiere token JWT en el encabezado Authorization:**
+**Headers requeridos:**
 ```
 Authorization: Bearer <token>
 ```
@@ -161,7 +218,7 @@ function authenticateToken(req, res, next) {
   }
 
   jwt.verify(token, jwtSecret, (err, user) => {
-    if (err) return res.status(403).json({ message: 'Token invalido o inesperado.' });
+    if (err) return res.status(403).json({ message: 'Token inválido o expirado.' });
     req.user = user;
     next();
   });
@@ -214,7 +271,7 @@ El archivo `public/client.html` ofrece una interfaz web simple para interactuar 
    El sistema enviará la solicitud con el token JWT en el encabezado y mostrará los datos del clima en pantalla.  
 
 3. **Manejo de errores:**  
-   Si el token expira o la ciudad no existe, se mostrará un mensaje descriptivo en el panel “Detalle”.
+   Si el token expira, la ciudad no existe o falta el token, se mostrará un mensaje descriptivo en el panel “Detalle”.
 
 ---
 
@@ -225,6 +282,7 @@ El servidor devuelve mensajes claros y códigos HTTP adecuados:
 | Código | Descripción |
 |--------|--------------|
 | 200 | Respuesta exitosa |
+| 400 | Faltan datos obligatorios |
 | 401 | Token requerido o credenciales incorrectas |
 | 403 | Token inválido o expirado |
 | 404 | Ciudad no encontrada |
@@ -237,6 +295,7 @@ El servidor devuelve mensajes claros y códigos HTTP adecuados:
 ```json
 "dependencies": {
   "axios": "^1.x",
+  "bcryptjs": "^2.x",
   "dotenv": "^16.x",
   "express": "^4.x",
   "jsonwebtoken": "^9.x",
@@ -249,13 +308,14 @@ El servidor devuelve mensajes claros y códigos HTTP adecuados:
 ## Notas Adicionales
 
 - El token JWT tiene una duración de **1 hora**.  
-- Todas las rutas relacionadas con datos externos están protegidas mediante el middleware JWT.  
+- Las contraseñas se gestionan mediante **bcrypt** para mayor seguridad.  
+- Incluye un endpoint `/health` para verificar el estado del servidor.  
 - Si la conexión con la API de OpenWeather falla, se devuelve un mensaje de error controlado.  
-- El proyecto puede ejecutarse tanto desde **Postman** como desde el **Client.html** incluido.
+- Puede utilizarse desde **Postman** o el **Client.html** incluido.
 
 ---
 
 ## Autor
 
 Proyecto desarrollado por **G. Mirarchi**  
-Examen Técnico: API JWT + OpenWeather (Node.js / Express)
+© 2025 - APIWeather+JWT
